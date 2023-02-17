@@ -54,7 +54,7 @@ app.post("/api/users/:uid/exercises", (req, res, next) => {
   let t = setTimeout(() => {
     next({ message: "timeout" });
   }, TIMEOUT);
-  const uid = "63ef0f9e1f53ef8aabfa0d36"; //req.params.uid;
+  const uid = req.params.uid;
   const description = req.body.description;
   const duration = req.body.duration;
   const date = new Date(req.body.date);
@@ -68,7 +68,7 @@ app.post("/api/users/:uid/exercises", (req, res, next) => {
 });
 
 app.get("/api/users/:uid/logs", (req, res, next) => {
-  const uid = "63ef0f9e1f53ef8aabfa0d36"; //req.params.uid;
+  const uid = req.params.uid;
   const from = req.query.from;
   const to = req.query.to;
   const limit = req.query.limit;
