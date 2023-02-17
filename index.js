@@ -42,8 +42,6 @@ app.get("/api/users", (req, res, next) => {
   dbAPI.FindUsers((err, docs) => {
     clearTimeout(t);
     if (err) return next(err);
-    console.log("FindUsers res:");
-    console.log(docs);
     res.send(docs);
   });
 });
@@ -57,13 +55,38 @@ app.post("/api/users/:uid/exercises", (req, res, next) => {
   const uid = req.params.uid;
   const description = req.body.description;
   const duration = req.body.duration;
-  const date = new Date(req.body.date);
-  console.log({ uid, description, duration, date });
+  let date = new Date();
+  if (req.body.date) {
+    date = new Date(req.body.date);
+  }
+  console.log(req.body);
+  let params = { uid, description, duration, date };
+  if (isNaN(date.getTime())) {
+    delete params["date"];
+  }
 
-  dbAPI.AddExercise({ uid, description, duration, date }, (err, docs) => {
-    clearTimeout(t);
+  dbAPI.FindUsersById(uid, (err, user) => {
     if (err) return next(err);
-    res.send(docs);
+    const username = user.username;
+    // res.send(username);
+    dbAPI.AddExercise(params, (err, ec) => {
+      clearTimeout(t);
+      if (err) return next(err);
+      console.log("return from add exec...");
+      console.log(ec);
+      let resD = {
+        username,
+        description: ec.description,
+        duration: ec.duration,
+        date: ec.date.toDateString(),
+        _id: uid
+      }
+      if (ec.date) {
+        resD.date = ec.date.toDateString();
+      }
+      console.log(resD);
+      res.send(resD);
+    });
   });
 });
 
@@ -84,11 +107,16 @@ app.get("/api/users/:uid/logs", (req, res, next) => {
     dbAPI.FindExercise(params, (err, docs) => {
       clearTimeout(t);
       if (err) return next(err);
-      let exercises = docs.map((item) => ({
-        description: item.description,
-        duration: item.duration,
-        date: item.date.toDateString(),
-      }));
+      let exercises = docs.map((item) => {
+        let ret = {
+          description: item.description,
+          duration: item.duration
+        }
+        if (item.date) {
+          ret.date = item.date.toDateString();
+        }
+        return ret;
+      });
       res.send({
         username,
         _id: uid,

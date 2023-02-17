@@ -23,7 +23,7 @@ const ExerciseModel = mongoose.model(
     username: { type: String },
     description: { type: String },
     duration: { type: Number },
-    date: { type: Date },
+    date: { type: Date, require: false },
   })
 );
 
@@ -50,13 +50,8 @@ const FindUsersById = (uid, done) => {
     .catch((err) => done(err, null));
 };
 
-const AddExercise = ({ uid, description, duration, date }, done) => {
-  const d = new ExerciseModel({
-    uid,
-    description,
-    duration,
-    date,
-  });
+const AddExercise = (params, done) => {
+  const d = new ExerciseModel(params);
   d.save((err, res) => {
     if (err) return console.error(err);
     done(null, res);
